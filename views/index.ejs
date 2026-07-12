@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= weather ? weather.city + ' Weather Forecast' : 'Weather Forecast' %></title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- CSS Stylesheet -->
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body class="<%= weather ? 'theme-' + weather.mood : '' %>">
+    <!-- Background glow elements for rich visuals -->
+    <div class="glow-bg glow-bg-1"></div>
+    <div class="glow-bg glow-bg-2"></div>
+
+    <header class="app-header">
+        <nav class="navbar">
+            <div class="nav-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="logo-icon">
+                    <path
+                        d="M17.5 19A3.5 3.5 0 0 0 21 15.5c0-2.79-2.54-4.5-5-4.5-.47 0-.89.09-1.25.27A5 5 0 0 0 5 14a3.5 3.5 0 0 0 2.5 5h10z" />
+                </svg>
+                <span>Weather Forecast</span>
+            </div>
+
+            <ul class="nav-links">
+                <% if (weather) { %>
+                    <li><a href="/?city=<%= weather.city %>&view=daily" class="<%= weather.view === 'daily' ? 'active' : '' %>">Daily</a></li>
+                    <li><a href="/?city=<%= weather.city %>&view=weekly" class="<%= weather.view === 'weekly' ? 'active' : '' %>">Weekly</a></li>
+                <% } else { %>
+                    <li><a href="#" class="active">Daily</a></li>
+                    <li><a href="#">Weekly</a></li>
+                <% } %>
+            </ul>
+
+            <form class="nav-search-form" action="/" method="GET">
+                <% if (weather) { %>
+                    <input type="hidden" name="view" value="<%= weather.view %>">
+                <% } %>
+                <div class="nav-search-wrapper">
+                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" name="city" class="nav-search-input" placeholder="Quick search..." aria-label="Quick search city" required>
+                </div>
+            </form>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <!-- Demo Banner if in fallback mock mode -->
+        <% if (weather && weather.isDemo) { %>
+            <div class="demo-banner">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span><strong>Demo Mode:</strong> Using simulated climate data. Set <code>OPENWEATHER_API_KEY</code> in a <code>.env</code> file for live forecasts.</span>
+            </div>
+        <% } %>
+
+        <% if (!weather) { %>
+            <!-- LANDING PAGE: If no city has been searched yet -->
+            <section class="hero-section">
+                <div class="intro-text">
+                    <h1>Explore the World's Weather</h1>
+                    <p>Get real-time forecasts, air quality indices, and live climate details for any location instantly.</p>
+                </div>
+
+                <form class="search-box-form" action="/" method="GET">
+                    <div class="search-box-container">
+                        <div class="search-box-glow"></div>
+                        <div class="search-box-inner">
+                            <svg class="location-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <input type="text" name="city" class="main-search-input" placeholder="Enter city name..."
+                                aria-label="Search weather for city" required>
+                            <button type="submit" class="search-button">
+                                <span>Search</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    <polyline points="12 5 19 12 12 19"></polyline>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="weather-graphic-card">
+                    <div class="graphic-wrapper">
+                        <img src="/weather_icon.png" alt="Sun half hidden by clouds" class="sun-cloud-graphic">
+                    </div>
+                    <div class="graphic-caption">
+                        <h3>Ready for Your Search</h3>
+                        <p>Enter a city name above to view local atmospheric conditions, UV index, humidity, and active alerts.</p>
+                    </div>
+                </div>
+            </section>
+
+        <% } else { %>
+            <!-- RESULTS PAGE: If weather data is available -->
+            <div class="weather-results-container">
+                
+                <!-- LEFT SIDE: Primary Location Information Card -->
+                <div class="weather-main-card">
+                    <div class="weather-location">
+                        <h2><%= weather.city %></h2>
+                        <span class="country-badge"><%= weather.country %></span>
+                    </div>
+
+                    <!-- Dynamic climate graphic based on mood -->
+                    <div class="weather-graphic-container">
+                        <% if (weather.mood === 'sunny') { %>
+                            <svg class="weather-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="32" cy="32" r="13" fill="#fbbf24" class="svg-sun-core" />
+                                <g class="svg-sun-beams" stroke="#fbbf24" stroke-width="3" stroke-linecap="round">
+                                    <line x1="32" y1="8" x2="32" y2="14" />
+                                    <line x1="32" y1="50" x2="32" y2="56" />
+                                    <line x1="8" y1="32" x2="14" y2="32" />
+                                    <line x1="50" y1="32" x2="56" y2="32" />
+                                    <line x1="15" y1="15" x2="19.24" y2="19.24" />
+                                    <line x1="44.76" y1="44.76" x2="49" y2="49" />
+                                    <line x1="15" y1="49" x2="19.24" y2="44.76" />
+                                    <line x1="44.76" y1="19.24" x2="49" y2="15" />
+                                </g>
+                            </svg>
+                        <% } else if (weather.mood === 'cloudy') { %>
+                            <svg class="weather-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path class="svg-cloud-back" d="M20 38a6 6 0 0 1 5.5-3.9 6.5 6.5 0 0 1 12.3-2.2 4 4 0 0 1 5.7 3.6 4.5 4.5 0 0 1-1.5 8.5H20a6 6 0 0 1 0-6z" fill="#64748b" opacity="0.6" />
+                                <path class="svg-cloud" d="M16 42a8 8 0 0 1 7.3-5.2 8.5 8.5 0 0 1 16-3 5 5 0 0 1 7.7 4.7 5.5 5.5 0 0 1-2 10.5H16a8 8 0 0 1 0-7z" fill="#e2e8f0" />
+                            </svg>
+                        <% } else if (weather.mood === 'rainy') { %>
+                            <svg class="weather-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path class="svg-cloud" d="M16 34a8 8 0 0 1 7.3-5.2 8.5 8.5 0 0 1 16-3 5 5 0 0 1 7.7 4.7 5.5 5.5 0 0 1-2 10.5H16a8 8 0 0 1 0-7z" fill="#475569" />
+                                <g stroke="#60a5fa" stroke-width="2" stroke-linecap="round">
+                                    <line x1="22" y1="44" x2="20" y2="49" class="svg-rain-drop drop-1" />
+                                    <line x1="29" y1="46" x2="27" y2="51" class="svg-rain-drop drop-2" />
+                                    <line x1="36" y1="44" x2="34" y2="49" class="svg-rain-drop drop-3" />
+                                    <line x1="43" y1="46" x2="41" y2="51" class="svg-rain-drop drop-4" />
+                                </g>
+                            </svg>
+                        <% } else if (weather.mood === 'thunderstorm') { %>
+                            <svg class="weather-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path class="svg-cloud" d="M16 32a8 8 0 0 1 7.3-5.2 8.5 8.5 0 0 1 16-3 5 5 0 0 1 7.7 4.7 5.5 5.5 0 0 1-2 10.5H16a8 8 0 0 1 0-7z" fill="#1e293b" />
+                                <path class="svg-lightning-bolt" d="M30 38 L25 45 L31 45 L28 53 L38 43 L32 43 L34 38 Z" fill="#fbbf24" stroke="#d97706" stroke-width="1" stroke-linejoin="round" />
+                            </svg>
+                        <% } else if (weather.mood === 'snow') { %>
+                            <svg class="weather-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path class="svg-cloud" d="M16 34a8 8 0 0 1 7.3-5.2 8.5 8.5 0 0 1 16-3 5 5 0 0 1 7.7 4.7 5.5 5.5 0 0 1-2 10.5H16a8 8 0 0 1 0-7z" fill="#94a3b8" />
+                                <g stroke="#ffffff" stroke-width="2" stroke-linecap="round">
+                                    <line x1="22" y1="44" x2="22" y2="48" class="svg-snowflake flake-1" />
+                                    <line x1="20" y1="46" x2="24" y2="46" class="svg-snowflake flake-1" />
+                                    <line x1="30" y1="47" x2="30" y2="51" class="svg-snowflake flake-2" />
+                                    <line x1="28" y1="49" x2="32" y2="49" class="svg-snowflake flake-2" />
+                                    <line x1="38" y1="44" x2="38" y2="48" class="svg-snowflake flake-3" />
+                                    <line x1="36" y1="46" x2="40" y2="46" class="svg-snowflake flake-3" />
+                                    <line x1="44" y1="47" x2="44" y2="51" class="svg-snowflake flake-4" />
+                                    <line x1="42" y1="49" x2="46" y2="49" class="svg-snowflake flake-4" />
+                                </g>
+                            </svg>
+                        <% } else if (weather.mood === 'mist') { %>
+                            <svg class="weather-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path class="svg-cloud" d="M16 30a8 8 0 0 1 7.3-5.2 8.5 8.5 0 0 1 16-3 5 5 0 0 1 7.7 4.7 5.5 5.5 0 0 1-2 10.5H16a8 8 0 0 1 0-7z" fill="#475569" opacity="0.8" />
+                                <g stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round">
+                                    <line x1="18" y1="40" x2="46" y2="40" class="svg-fog-line line-1" />
+                                    <line x1="14" y1="45" x2="42" y2="45" class="svg-fog-line line-2" />
+                                    <line x1="22" y1="50" x2="50" y2="50" class="svg-fog-line line-3" />
+                                </g>
+                            </svg>
+                        <% } %>
+                    </div>
+
+                    <div class="weather-temperature-container">
+                        <span class="weather-temp"><%= weather.temp %></span>
+                        <div class="weather-condition"><%= weather.description %></div>
+                        <div class="weather-feels">Feels like <%= weather.feels_like %>°C</div>
+                    </div>
+
+                    <div class="weather-date-stamp">
+                        <%= new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }) %>
+                    </div>
+                </div>
+
+                <!-- RIGHT SIDE: Forecast Table (The Rectangle) & Details Cards -->
+                <div class="weather-details-pane">
+                    
+                    <!-- Rectangular Forecast Container -->
+                    <div class="forecast-container-wrapper">
+                        <div class="forecast-pane-header">
+                            <h3><%= weather.view === 'daily' ? "Today's Hourly Forecast (3h Steps)" : "7-Day Weekly Forecast" %></h3>
+                            <div class="view-toggle-links">
+                                <a href="/?city=<%= weather.city %>&view=daily" class="<%= weather.view === 'daily' ? 'active' : '' %>">Daily</a>
+                                <a href="/?city=<%= weather.city %>&view=weekly" class="<%= weather.view === 'weekly' ? 'active' : '' %>">Weekly</a>
+                            </div>
+                        </div>
+
+                        <!-- The Bottom Rectangular Thingy: Becomes larger for weekly view -->
+                        <div class="forecast-rectangle-card">
+                            
+                            <% if (weather.view === 'daily') { %>
+                                <!-- Daily View: Hourly Horizontal scroll (Next 24 hours in 3-hour blocks) -->
+                                <div class="forecast-hourly-list">
+                                    <% weather.hourly.forEach(item => { %>
+                                        <div class="hourly-item-card">
+                                            <span class="hourly-time"><%= item.time %></span>
+                                            
+                                            <!-- Mini SVG -->
+                                            <div class="hourly-graphic">
+                                                <% if (item.mood === 'sunny') { %>
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" fill="#fbbf24"/><circle cx="12" cy="12" r="7" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="2 2"/></svg>
+                                                <% } else if (item.mood === 'cloudy') { %>
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 15a3 3 0 0 1 2.8-2 3.2 3.2 0 0 1 6-1.1 2 2 0 0 1 3.2 1.8 2.2 2.2 0 0 1-.8 4.3H6a3 3 0 0 1 0-3z" fill="#cbd5e1"/></svg>
+                                                <% } else if (item.mood === 'rainy') { %>
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M7 13a2.5 2.5 0 0 1 2.3-1.6 2.7 2.7 0 0 1 5-.9 1.8 1.8 0 0 1 2.7 1.5 2 2 0 0 1-.8 3.5H7a2.5 2.5 0 0 1 0-2.5z" fill="#475569"/><line x1="9" y1="17" x2="8" y2="19" stroke="#60a5fa" stroke-width="1.5"/><line x1="12" y1="17" x2="11" y2="19" stroke="#60a5fa" stroke-width="1.5"/><line x1="15" y1="17" x2="14" y2="19" stroke="#60a5fa" stroke-width="1.5"/></svg>
+                                                <% } else if (item.mood === 'thunderstorm') { %>
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M7 13a2.5 2.5 0 0 1 2.3-1.6 2.7 2.7 0 0 1 5-.9 1.8 1.8 0 0 1 2.7 1.5 2 2 0 0 1-.8 3.5H7a2.5 2.5 0 0 1 0-2.5z" fill="#1e293b"/><path d="M11 16 L9 19 L12 19 L10 22 L14 18 L11 18 Z" fill="#fbbf24"/></svg>
+                                                <% } else if (item.mood === 'snow') { %>
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M7 13a2.5 2.5 0 0 1 2.3-1.6 2.7 2.7 0 0 1 5-.9 1.8 1.8 0 0 1 2.7 1.5 2 2 0 0 1-.8 3.5H7a2.5 2.5 0 0 1 0-2.5z" fill="#94a3b8"/><circle cx="9" cy="18" r="1" fill="#fff"/><circle cx="12" cy="18" r="1" fill="#fff"/><circle cx="15" cy="18" r="1" fill="#fff"/></svg>
+                                                <% } else if (item.mood === 'mist') { %>
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><line x1="6" y1="10" x2="18" y2="10" stroke="#cbd5e1" stroke-width="1.5"/><line x1="4" y1="13" x2="16" y2="13" stroke="#cbd5e1" stroke-width="1.5"/><line x1="8" y1="16" x2="20" y2="16" stroke="#cbd5e1" stroke-width="1.5"/></svg>
+                                                <% } %>
+                                            </div>
+
+                                            <span class="hourly-temp"><%= item.temp %>°</span>
+                                            
+                                            <!-- Probability of Rain percentage -->
+                                            <span class="hourly-pop">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                                </svg>
+                                                <%= item.pop %>%
+                                            </span>
+                                        </div>
+                                    <% }); %>
+                                </div>
+
+                            <% } else { %>
+                                <!-- Weekly View: Large 7-Day list layout -->
+                                <div class="forecast-weekly-list">
+                                    <% weather.weekly.forEach(day => { %>
+                                        <div class="weekly-item-row">
+                                            <div class="weekly-day-info">
+                                                <span class="weekly-day-name"><%= day.dayName %></span>
+                                                <span class="weekly-date-label"><%= day.date %></span>
+                                            </div>
+
+                                            <!-- Mini SVG -->
+                                            <div class="weekly-graphic">
+                                                <% if (day.mood === 'sunny') { %>
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" fill="#fbbf24"/><circle cx="12" cy="12" r="7" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="2 2"/></svg>
+                                                <% } else if (day.mood === 'cloudy') { %>
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 15a3 3 0 0 1 2.8-2 3.2 3.2 0 0 1 6-1.1 2 2 0 0 1 3.2 1.8 2.2 2.2 0 0 1-.8 4.3H6a3 3 0 0 1 0-3z" fill="#cbd5e1"/></svg>
+                                                <% } else if (day.mood === 'rainy') { %>
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M7 13a2.5 2.5 0 0 1 2.3-1.6 2.7 2.7 0 0 1 5-.9 1.8 1.8 0 0 1 2.7 1.5 2 2 0 0 1-.8 3.5H7a2.5 2.5 0 0 1 0-2.5z" fill="#475569"/><line x1="9" y1="17" x2="8" y2="19" stroke="#60a5fa" stroke-width="1.5"/><line x1="12" y1="17" x2="11" y2="19" stroke="#60a5fa" stroke-width="1.5"/><line x1="15" y1="17" x2="14" y2="19" stroke="#60a5fa" stroke-width="1.5"/></svg>
+                                                <% } else if (day.mood === 'thunderstorm') { %>
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M7 13a2.5 2.5 0 0 1 2.3-1.6 2.7 2.7 0 0 1 5-.9 1.8 1.8 0 0 1 2.7 1.5 2 2 0 0 1-.8 3.5H7a2.5 2.5 0 0 1 0-2.5z" fill="#1e293b"/><path d="M11 16 L9 19 L12 19 L10 22 L14 18 L11 18 Z" fill="#fbbf24"/></svg>
+                                                <% } else if (day.mood === 'snow') { %>
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M7 13a2.5 2.5 0 0 1 2.3-1.6 2.7 2.7 0 0 1 5-.9 1.8 1.8 0 0 1 2.7 1.5 2 2 0 0 1-.8 3.5H7a2.5 2.5 0 0 1 0-2.5z" fill="#94a3b8"/><circle cx="9" cy="18" r="1" fill="#fff"/><circle cx="12" cy="18" r="1" fill="#fff"/><circle cx="15" cy="18" r="1" fill="#fff"/></svg>
+                                                <% } else if (day.mood === 'mist') { %>
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><line x1="6" y1="10" x2="18" y2="10" stroke="#cbd5e1" stroke-width="1.5"/><line x1="4" y1="13" x2="16" y2="13" stroke="#cbd5e1" stroke-width="1.5"/><line x1="8" y1="16" x2="20" y2="16" stroke="#cbd5e1" stroke-width="1.5"/></svg>
+                                                <% } %>
+                                            </div>
+
+                                            <span class="weekly-condition-desc"><%= day.description %></span>
+
+                                            <div class="weekly-temp-span">
+                                                <span class="weekly-temp-max"><%= day.tempMax %>°</span>
+                                                <span class="weekly-temp-min"><%= day.tempMin %>°</span>
+                                            </div>
+                                        </div>
+                                    <% }); %>
+                                </div>
+                            <% } %>
+                            
+                        </div>
+                    </div>
+
+                    <!-- Details parameters grid -->
+                    <div class="details-grid">
+                        
+                        <!-- Parameter 1: Humidity -->
+                        <div class="detail-card">
+                            <div class="detail-icon-wrapper">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                </svg>
+                            </div>
+                            <div class="detail-info">
+                                <span class="detail-label">Humidity</span>
+                                <span class="detail-value"><%= weather.humidity %>%</span>
+                            </div>
+                        </div>
+
+                        <!-- Parameter 2: Air Quality -->
+                        <div class="detail-card">
+                            <div class="detail-icon-wrapper">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+                                    <path d="M12 6v6l4 2"/>
+                                </svg>
+                            </div>
+                            <div class="detail-info">
+                                <span class="detail-label">Air Quality</span>
+                                <span class="detail-value <%= weather.air_quality.class %>"><%= weather.air_quality.label %></span>
+                            </div>
+                        </div>
+
+                        <!-- Parameter 3: Rain Chance -->
+                        <div class="detail-card">
+                            <div class="detail-icon-wrapper">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2v3M12 19v3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M2 12h3M19 12h3M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12"/>
+                                </svg>
+                            </div>
+                            <div class="detail-info">
+                                <span class="detail-label">Rain Chance</span>
+                                <span class="detail-value"><%= weather.pop %>%</span>
+                            </div>
+                        </div>
+
+                        <!-- Parameter 4: Climate Mood -->
+                        <div class="detail-card">
+                            <div class="detail-icon-wrapper">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
+                                </svg>
+                            </div>
+                            <div class="detail-info">
+                                <span class="detail-label">Wind Speed</span>
+                                <span class="detail-value"><%= weather.wind_speed %> m/s</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        <% } %>
+    </main>
+
+    <footer class="app-footer">
+        <p>2026 Smissyo.</p>
+    </footer>
+</body>
+
+</html>
